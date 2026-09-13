@@ -1,0 +1,19 @@
+{
+  "name": "ChordStash — fretboard chord explorer",
+  "short_name": "ChordStash",
+  "description": "Guitar fretboard chord viewer with interval labelling and a bank of indie / jam / neo-soul progressions.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#16130F",
+  "theme_color": "#16130F",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

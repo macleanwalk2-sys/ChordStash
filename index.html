@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ChordStash — fretboard chord explorer</title>
+<meta name="description" content="A guitar fretboard chord viewer for indie, jam and neo-soul writing. Shapes, interval labelling and a bank of twenty progressions.">
+<meta name="theme-color" content="#16130F">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232A2119'/%3E%3Cg stroke='%23C9BFA8' stroke-width='1.4'%3E%3Cpath d='M7 8.5h18M7 15.5h18M7 22.5h18'/%3E%3C/g%3E%3Ccircle cx='16' cy='15.5' r='4.6' fill='%23E0703C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+<a class="skip-link" href="#stage">Skip to the fretboard</a>
+
+<header class="masthead">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+      <g stroke="currentColor" stroke-width="1.3" opacity=".55"><path d="M3 8h26M3 16h26M3 24h26"/></g>
+      <circle cx="12" cy="16" r="5" fill="var(--accent)"/>
+    </svg>
+    <div class="brand-text">
+      <h1>ChordStash</h1>
+      <p class="tagline">Fretboard chord explorer</p>
+    </div>
+  </div>
+
+  <div class="masthead-tools">
+    <div class="seg" role="radiogroup" aria-label="Note label mode" id="label-mode">
+      <button type="button" role="radio" aria-checked="true"  data-mode="interval">Interval</button>
+      <button type="button" role="radio" aria-checked="false" data-mode="note">Note</button>
+      <button type="button" role="radio" aria-checked="false" data-mode="both">Both</button>
+    </div>
+    <button type="button" class="icon-btn" id="flip-btn" aria-pressed="false" title="Flip string order">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7h12M4 13h12" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M13 4l3 3-3 3M7 10l-3 3 3 3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Flip</span>
+    </button>
+    <button type="button" class="icon-btn" id="theme-btn" title="Switch theme">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 1v2M10 17v2M1 10h2M17 10h2M3.6 3.6l1.4 1.4M15 15l1.4 1.4M16.4 3.6L15 5M5 15l-1.4 1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span id="theme-label">Auto</span>
+    </button>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- ------------------------------------------------------------ rail -->
+  <aside class="rail panel" aria-label="Chord and progression browser">
+    <div class="tabs" role="tablist" aria-label="Browser">
+      <button type="button" role="tab" aria-selected="true"  aria-controls="tab-chords" id="tabbtn-chords" data-tab="chords">Chords</button>
+      <button type="button" role="tab" aria-selected="false" aria-controls="tab-progs"  id="tabbtn-progs"  data-tab="progs">Progressions</button>
+      <button type="button" role="tab" aria-selected="false" aria-controls="tab-palette" id="tabbtn-palette" data-tab="palette">Palette</button>
+    </div>
+
+    <div class="tabpanel" id="tab-chords" role="tabpanel" aria-labelledby="tabbtn-chords" tabindex="0">
+      <div class="field">
+        <span class="field-label">Root</span>
+        <div class="root-grid" id="root-grid" role="radiogroup" aria-label="Chord root"></div>
+      </div>
+      <div class="field">
+        <span class="field-label">Quality</span>
+        <div id="quality-list"></div>
+      </div>
+    </div>
+
+    <div class="tabpanel" id="tab-progs" role="tabpanel" aria-labelledby="tabbtn-progs" tabindex="0" hidden>
+      <div id="prog-list"></div>
+    </div>
+
+    <div class="tabpanel" id="tab-palette" role="tabpanel" aria-labelledby="tabbtn-palette" tabindex="0" hidden>
+      <div id="palette-body"></div>
+    </div>
+  </aside>
+
+  <!-- ----------------------------------------------------------- stage -->
+  <section class="stage" id="stage">
+    <div class="chord-head">
+      <div class="chord-title">
+        <h2 id="chord-symbol" aria-live="polite">&nbsp;</h2>
+        <p id="chord-name"></p>
+      </div>
+      <div class="badges" id="chord-badges"></div>
+    </div>
+
+    <div class="board-wrap">
+      <div class="board-scroll">
+        <svg id="fretboard" class="fretboard"></svg>
+      </div>
+    </div>
+
+    <ul class="legend" id="legend" aria-label="Interval colour key"></ul>
+
+    <section class="prog-bar" id="prog-bar" hidden aria-label="Progression">
+      <div class="prog-bar-head">
+        <div>
+          <span class="eyebrow" id="prog-code"></span>
+          <h3 id="prog-name"></h3>
+        </div>
+        <div class="prog-keyline">
+          <label class="field-label" for="prog-key">Key</label>
+          <select id="prog-key"></select>
+          <span class="mode-label" id="prog-mode"></span>
+        </div>
+      </div>
+      <div class="chips" id="prog-chips"></div>
+      <div class="stepper">
+        <button type="button" class="step-btn" id="step-prev" title="Previous chord (left arrow)">&larr;<span class="sr-only"> Previous chord</span></button>
+        <span class="step-count" id="step-count"></span>
+        <button type="button" class="step-btn" id="step-next" title="Next chord (right arrow)">&rarr;<span class="sr-only"> Next chord</span></button>
+        <span class="step-hint">Arrow keys step the changes</span>
+      </div>
+    </section>
+
+    <section class="voicings" aria-label="Voicings">
+      <div class="section-head">
+        <span class="eyebrow">Voicings</span>
+        <span class="section-note" id="voicing-count"></span>
+      </div>
+      <div class="voicing-strip" id="voicing-strip"></div>
+      <p class="unavailable" id="voicing-unavailable" hidden></p>
+    </section>
+  </section>
+
+  <!-- ------------------------------------------------------------ info -->
+  <aside class="info panel" aria-label="Chord detail">
+    <div id="chord-info"></div>
+    <div id="prog-info"></div>
+  </aside>
+</main>
+
+<footer class="colophon">
+  <p>Shapes, progressions and every note of the theory copy come from the
+     <strong>chord reference</strong> shipped alongside this app in <code>docs/</code>.
+     Nothing here is hardcoded per chord &mdash; the app stores frets and a root and computes
+     the rest, so transposition is free.</p>
+</footer>
+
+<script src="src/theory.js"></script>
+<script src="src/shapes.js"></script>
+<script src="src/progressions.js"></script>
+<script src="src/fretboard.js"></script>
+<script src="src/reference.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
