@@ -8,6 +8,9 @@ Phase 1 scope.
 
 ---
 
+**Live:** https://claude.ai/code/artifact/ebe28b4e-bba7-408f-8421-0a5e2a06e226
+(private to your account — share it from the page's share menu if you want to)
+
 ## Running it
 
 No build step, no dependencies, no tooling.
