@@ -332,6 +332,71 @@
     return root + (q ? q.suffix : '');
   }
 
+
+  /* ----------------------------------------------------------- voice leading
+   * Reference §8: move the fewest notes possible, hold common tones, move
+   * everything else by step. Comparing two voicings by pitch class shows which
+   * notes are held and which have to move — and how far.
+   */
+  function signedStep(fromPc, toPc) {
+    return mod(toPc - fromPc + 6, 12) - 6; // -6..5, negative = falling
+  }
+
+  function pcNotes(voicing) {
+    var seen = {}, out = [];
+    voicing.sounding.forEach(function (n) {
+      if (!seen[n.pc]) { seen[n.pc] = n; out.push(n); }
+    });
+    return out;
+  }
+
+  function voiceLeading(prevVoicing, curVoicing) {
+    if (!prevVoicing || !curVoicing) return null;
+    var prev = pcNotes(prevVoicing), cur = pcNotes(curVoicing);
+    var prevPc = prev.map(function (n) { return n.pc; });
+    var curPc = cur.map(function (n) { return n.pc; });
+
+    var held = cur.filter(function (n) { return prevPc.indexOf(n.pc) >= 0; });
+    var arrivals = cur.filter(function (n) { return prevPc.indexOf(n.pc) < 0; });
+    var departures = prev.filter(function (n) { return curPc.indexOf(n.pc) < 0; });
+
+    /* Pair each arriving note with the departing note nearest to it, closest
+     * pair first, so two arrivals never claim the same departure. */
+    var pairs = [];
+    arrivals.forEach(function (a) {
+      departures.forEach(function (d) {
+        pairs.push({ to: a, from: d, semitones: signedStep(d.pc, a.pc) });
+      });
+    });
+    pairs.sort(function (x, y) { return Math.abs(x.semitones) - Math.abs(y.semitones); });
+
+    var usedTo = {}, usedFrom = {}, moved = [];
+    pairs.forEach(function (pr) {
+      if (usedTo[pr.to.pc] || usedFrom[pr.from.pc]) return;
+      usedTo[pr.to.pc] = 1; usedFrom[pr.from.pc] = 1;
+      moved.push(pr);
+    });
+    arrivals.forEach(function (a) {
+      if (!usedTo[a.pc]) moved.push({ to: a, from: null, semitones: null });
+    });
+    moved.sort(function (x, y) { return x.to.midi - y.to.midi; });
+
+    var stepwise = moved.filter(function (m) {
+      return m.semitones !== null && Math.abs(m.semitones) <= 2;
+    }).length;
+
+    return {
+      held: held,
+      heldPcs: held.map(function (n) { return n.pc; }),
+      moved: moved,
+      dropped: departures.filter(function (d) { return !usedFrom[d.pc]; }),
+      commonTones: held.length,
+      stepwise: stepwise,
+      /* The reference's first rule, as a number: how much has to move at all. */
+      motion: moved.length
+    };
+  }
+
   CS.TUNING = TUNING;
   CS.MAX_FRET = MAX_FRET;
   CS.ROOTS = ROOTS;
@@ -352,4 +417,6 @@
   CS.transposeShape = transposeShape;
   CS.buildVoicing = buildVoicing;
   CS.symbolFor = symbolFor;
+  CS.voiceLeading = voiceLeading;
+  CS.signedStep = signedStep;
 })(window.CS = window.CS || {});

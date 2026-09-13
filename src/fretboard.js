@@ -6,7 +6,7 @@
 (function (CS) {
   'use strict';
 
-  var GUTTER = 68;      // room left of the nut for x / o markers
+  var GUTTER = 76;      // room left of the nut for x / o markers
   var BOARD_W = 1000;
   var PAD_R = 18;
   var STRING_GAP = 42;
@@ -83,10 +83,10 @@
       // Kept deliberately recessive: a real inlay is bright, but at this size
       // a bright one reads as a note dot and fights the interval colours.
       if (MARKERS[i] === 2) {
-        out += '<circle class="fb-inlay" cx="' + cx.toFixed(1) + '" cy="' + (mid - STRING_GAP * 0.92).toFixed(1) + '" r="8"/>';
-        out += '<circle class="fb-inlay" cx="' + cx.toFixed(1) + '" cy="' + (mid + STRING_GAP * 0.92).toFixed(1) + '" r="8"/>';
+        out += '<circle class="fb-inlay" cx="' + cx.toFixed(1) + '" cy="' + (mid - STRING_GAP * 0.92).toFixed(1) + '" r="7"/>';
+        out += '<circle class="fb-inlay" cx="' + cx.toFixed(1) + '" cy="' + (mid + STRING_GAP * 0.92).toFixed(1) + '" r="7"/>';
       } else {
-        out += '<circle class="fb-inlay" cx="' + cx.toFixed(1) + '" cy="' + mid.toFixed(1) + '" r="8"/>';
+        out += '<circle class="fb-inlay" cx="' + cx.toFixed(1) + '" cy="' + mid.toFixed(1) + '" r="7"/>';
       }
     }
 
@@ -115,7 +115,7 @@
       out += '<line x1="' + (GUTTER - 9) + '" y1="' + (y - GAUGE[i] / 2 + 0.3).toFixed(2) +
              '" x2="' + (GUTTER + BOARD_W) + '" y2="' + (y - GAUGE[i] / 2 + 0.3).toFixed(2) +
              '" stroke="var(--fb-string-hi)" stroke-width="0.7" opacity="0.7"/>';
-      out += '<text class="fb-open-name" x="14" y="' + (y + 4.5) + '">' + OPEN_NAMES[i] + '</text>';
+      out += '<text class="fb-open-name" x="11" y="' + (y + 4.5) + '">' + OPEN_NAMES[i] + '</text>';
     }
     return out;
   }
@@ -141,29 +141,42 @@
     return '<tspan class="fb-lab-main">' + esc(CS.pretty(note.label)) + '</tspan>';
   }
 
-  function noteDot(note, cx, cy, mode, index) {
+  function noteDot(note, cx, cy, mode, index, held) {
     var r = mode === 'both' ? 17.5 : 16;
-    var cls = 'fb-dot role-' + note.role + (note.open ? ' is-open' : '');
+    var cls = 'fb-dot role-' + note.role + (note.open ? ' is-open' : '') +
+              (held ? ' is-held' : '');
     var out = '<g class="' + cls + '" style="--i:' + index + '" transform="translate(' +
               cx.toFixed(1) + ',' + cy.toFixed(1) + ')">';
     if (note.role === 'root') {
       out += '<circle class="fb-dot-ring" r="' + (r + 4.5) + '"/>';
     }
     out += '<circle class="fb-dot-face" r="' + r + '"/>';
+    // A tie running into the dot: this note was already sounding in the chord
+    // before it, so it is held rather than re-fingered. Open notes sit in the
+    // gutter, so their tie runs right instead of into the string labels.
+    if (held) {
+      var tie = note.open ? 'M14 0 H26' : 'M' + (-r - 16) + ' 0 H' + (-r + 2);
+      // The tie runs along the string, in roughly the string's own colour, so
+      // it needs a dark halo or it vanishes into the string and the fret wire.
+      out += '<path class="fb-tie-halo" d="' + tie + '"/>';
+      out += '<path class="fb-tie" d="' + tie + '"/>';
+    }
     out += '<text class="fb-dot-label" x="0" y="' + (mode === 'both' ? 0 : 5) + '">' +
            dotLabel(note, mode) + '</text>';
     out += '<title>' + esc(CS.pretty(note.name) + ' — ' + CS.pretty(note.label) +
-           (note.open ? ' (open)' : ' (fret ' + note.fret + ')')) + '</title>';
+           (note.open ? ' (open)' : ' (fret ' + note.fret + ')') +
+           (held ? ' \u2014 held from the previous chord' : '')) + '</title>';
     out += '</g>';
     return out;
   }
 
-  function markers(voicing, flipped, mode, frets) {
+  function markers(voicing, flipped, mode, frets, heldPcs) {
+    var held = heldPcs || [];
     var out = '', i = 0;
     voicing.notes.forEach(function (n) {
       var y = stringY(n.string, flipped);
       if (n.muted) {
-        var mx = GUTTER - 34;
+        var mx = GUTTER - 36;
         out += '<g class="fb-mute"><line x1="' + (mx - 7) + '" y1="' + (y - 7) + '" x2="' +
                (mx + 7) + '" y2="' + (y + 7) + '"/><line x1="' + (mx + 7) + '" y1="' + (y - 7) +
                '" x2="' + (mx - 7) + '" y2="' + (y + 7) + '"/>' +
@@ -172,13 +185,46 @@
       }
       var cx;
       if (n.fret === 0) {
-        cx = GUTTER - 34;                       // open note sits in the gutter
+        cx = GUTTER - 36;                       // open note sits in the gutter
       } else {
         cx = GUTTER + (fretPos(n.fret - 1, frets) + fretPos(n.fret, frets)) / 2;
       }
-      out += noteDot(n, cx, y, mode, i++);
+      out += noteDot(n, cx, y, mode, i++, held.indexOf(n.pc) >= 0);
     });
     return out;
+  }
+
+  /* Every place on the neck the chord's tones live, drawn faint, so you can see
+   * the other voicings around the one you are holding. Tones come from the
+   * quality's formula rather than the shape, so an omitted 5th still shows. */
+  function ghosts(voicing, flipped, frets) {
+    var q = CS.QUALITIES[voicing.quality];
+    if (!q) return '';
+    var tone = {};
+    q.formula.forEach(function (semi) {
+      var label = CS.intervalLabel(voicing.quality, semi);
+      tone[CS.mod(voicing.rootPc + semi, 12)] = { label: label, role: CS.roleOf(label) };
+    });
+    var taken = {};
+    voicing.notes.forEach(function (n) {
+      if (!n.muted) taken[n.string + ':' + n.fret] = 1;
+    });
+
+    var out = '<g class="fb-ghosts">', st, fr;
+    for (st = 0; st < 6; st++) {
+      for (fr = 0; fr <= frets; fr++) {
+        var pc = CS.mod(CS.TUNING[st] + fr, 12);
+        var t = tone[pc];
+        if (!t || taken[st + ':' + fr]) continue;
+        var y = stringY(st, flipped);
+        var cx = fr === 0 ? GUTTER - 36
+               : GUTTER + (fretPos(fr - 1, frets) + fretPos(fr, frets)) / 2;
+        out += '<circle class="fb-ghost role-' + t.role + '" cx="' + cx.toFixed(1) +
+               '" cy="' + y + '" r="4.8"><title>' + esc(CS.pretty(t.label)) +
+               '</title></circle>';
+      }
+    }
+    return out + '</g>';
   }
 
   /* ------------------------------------------------------------- render */
@@ -194,7 +240,8 @@
     el.setAttribute('aria-label', opts.ariaLabel || 'Fretboard diagram');
 
     var svg = defs() + board(frets) + strings(flipped) + fretNumbers(frets);
-    if (voicing) svg += markers(voicing, flipped, mode, frets);
+    if (voicing && opts.ghosts) svg += ghosts(voicing, flipped, frets);
+    if (voicing) svg += markers(voicing, flipped, mode, frets, opts.heldPcs);
     el.innerHTML = svg;
   }
 

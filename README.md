@@ -50,7 +50,7 @@ Colour encodes function, and the hierarchy *is* the teaching:
 | Extensions 9 / 11 / 13 | violet |
 | 5th | hollow outline, quietest — the first note you drop |
 
-**Chords** — 12 roots × 19 qualities. Shapes transpose; where a shape can't reach a
+**Chords** — 12 roots × 19 qualities, 44 shapes. Shapes transpose; where a shape can't reach a
 root it is greyed out with the reason, and the nearest playable voicing is
 substituted with a note saying so. All available voicings show as thumbnails.
 
@@ -58,6 +58,21 @@ substituted with a note saying so. All available voicings show as thumbnails.
 bar counts, slash-chord bass notes, click-to-load chips, prev/next plus ← → arrow keys,
 and full transposition into any key. The bass lines, piano hints and "why it works"
 lines are the reference's own words.
+
+**Voice leading** — stepping a progression shows what the change actually costs:
+how many common tones are held, how many of the remaining notes move by step, and
+each individual motion with its direction and distance. Held notes are **tied** on
+the fretboard so you can see which fingers stay put. Index 0 compares against the
+last chord, because these progressions loop.
+
+This is reference §8 made visible. `E7 → Amaj7` shows `D(♭7) → C♯(3)` — the 7th
+falling by step to the 3rd, which is rule 5. `Em7 → E♭maj7` in A2 shows E→E♭ and
+B→B♭, which is exactly the chromatic slip the progression's own note warns about.
+
+**Ghost tones** — a toggle that shows every other place on the neck the current
+chord's tones live, faint and colour-coded by function. Tones come from the
+quality's formula rather than the shape, so an omitted 5th still shows up. Useful
+for building your own voicing around the one you're holding.
 
 **Info panel** — spelling low→high, formula with omitted degrees struck through,
 what the voicing *adds* beyond the chord symbol (the open-string drones pick up
@@ -120,8 +135,18 @@ fall out of the barre shapes for free.
 - Transposing progression **E3** (and any other open-drone voicing) out of its written
   key substitutes a movable shape, because those voicings *are* their open strings.
   The app says so on screen instead of pretending.
-- Some qualities ship a single shape (maj9, m11, 13, 7♯9) — that's what the reference
-  provides. More voicings are data, not code.
+- 7♯9 still ships a single shape; the A-root form is the one that actually sits
+  under the hand. Everything else has at least two positions.
+- Voice leading is compared by pitch class, not by literal voice. Guitar voicings
+  double notes and change string count between chords, so "the alto moved" isn't a
+  question this can honestly answer — what it does answer is which tones are shared
+  and how far the rest have to travel.
+
+## URL state
+
+The current chord or progression step lives in the location hash, so any view is
+bookmarkable and linkable — `#p/a2/C/2` is A2 in C on the third chord, `#c/C/maj9/maj9-a/0`
+is a Cmaj9. Quality ids contain `#` and `/`, so each segment is encoded individually.
 
 ## Phase 2 — deliberately left room for
 

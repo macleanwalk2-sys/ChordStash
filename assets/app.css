@@ -35,6 +35,8 @@
   --fb-string: #B9AE97;
   --fb-string-hi: #F1E9D8;
   --fb-mute:   #9B8F79;
+  --fb-tie:    #F0E6D0;
+  --fb-tie-halo: #241A10;
   --fb-open-name: #A2957D;
   --fb-num:    #8B8171;
   --fb-num-hi: #B5512A;
@@ -80,6 +82,8 @@
     --fb-wood-b: #2C2017;
     --fb-wood-c: #221810;
     --fb-edge:   #100B07;
+    --fb-tie:    #EDE2CA;
+    --fb-tie-halo: #150E08;
     --fb-num:    #857C6C;
     --fb-num-hi: #E0703C;
     --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.7);
@@ -336,7 +340,7 @@ button { cursor: pointer; }
 }
 .fb-num-mark { fill: var(--fb-num-hi); font-weight: 600; }
 .fb-mute line { stroke: var(--fb-mute); stroke-width: 2.4; stroke-linecap: round; }
-.fb-inlay { fill: var(--fb-inlay); opacity: .26; }
+.fb-inlay { fill: var(--fb-inlay); opacity: .17; }
 
 .fb-dot-face { fill: var(--dot-bg); stroke: var(--dot-stroke, none); stroke-width: 2; }
 .fb-dot-ring { fill: none; stroke: var(--role-root-ring); stroke-width: 1.6; opacity: .42; }
@@ -360,6 +364,18 @@ button { cursor: pointer; }
 /* the <g> transform is already carrying position, so settle in on opacity only */
 .fb-dot { animation: dot-in .24s ease-out backwards; animation-delay: calc(var(--i, 0) * 22ms); }
 @keyframes dot-in { from { opacity: 0; } to { opacity: 1; } }
+
+
+/* a held note is tied into from the chord before it */
+.fb-tie-halo { stroke: var(--fb-tie-halo); stroke-width: 8; stroke-linecap: round; fill: none; }
+.fb-tie { stroke: var(--fb-tie); stroke-width: 4; stroke-linecap: round; fill: none; }
+.fb-dot.is-held .fb-dot-face { stroke: var(--fb-tie); stroke-width: 1.6; }
+.fb-dot.role-fifth.is-held .fb-dot-face { stroke: var(--fb-tie); }
+
+/* every other place these chord tones sit on the neck */
+.fb-ghost { fill: var(--dot-bg); opacity: .38; pointer-events: none; }
+.fb-ghost.role-fifth { fill: none; stroke: var(--role-fifth-line); stroke-width: 1.5; opacity: .45; }
+.fb-ghost.role-third { opacity: .3; }
 
 /* =============================================================== legend */
 .legend {
@@ -528,6 +544,39 @@ button { cursor: pointer; }
   border-radius: 0 7px 7px 0;
   font-style: italic; font-size: 13px; line-height: 1.55; color: var(--ink);
 }
+
+
+/* ======================================================== voice leading */
+.lead-card {
+  margin-bottom: 14px; padding: 11px 12px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+}
+.lead-from { text-transform: none; letter-spacing: .01em; color: var(--accent); font-weight: 600; }
+.lead-stats {
+  font-family: var(--font-mono); font-size: 11px; color: var(--ink-2);
+  margin: 5px 0 2px; letter-spacing: .02em;
+}
+.lead-row { display: flex; gap: 9px; align-items: flex-start; margin-top: 7px; }
+.lead-tag {
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .11em;
+  text-transform: uppercase; color: var(--ink-3);
+  flex: none; min-width: 36px; padding-top: 6px;
+}
+.lead-notes, .lead-moves { display: flex; gap: 4px; flex-wrap: wrap; min-width: 0; }
+.mv {
+  display: inline-flex; align-items: baseline; gap: 4px;
+  font-family: var(--font-mono); font-size: 11px;
+  padding: 4px 7px; border-radius: 5px;
+  border: 1px solid var(--line-2); color: var(--ink);
+}
+.mv i { font-style: normal; font-size: 9.5px; color: var(--ink-3); }
+.mv em { font-style: normal; font-size: 9.5px; font-weight: 600; }
+/* stepwise motion is the goal; a leap is worth seeing */
+.mv.is-step { border-color: color-mix(in srgb, var(--role-seventh-bg) 60%, transparent); }
+.mv.is-step em { color: var(--role-seventh-bg); }
+.mv.is-leap { border-color: color-mix(in srgb, var(--role-ext-bg) 60%, transparent); }
+.mv.is-leap em { color: var(--role-ext-bg); }
+.mv.is-new { border-style: dashed; color: var(--ink-2); }
 
 /* ============================================================= palette */
 .palette-key { display: flex; flex-direction: column; gap: 6px; }

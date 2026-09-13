@@ -28,17 +28,33 @@
       rootString: 1, rootFret: 3, movable: false,
       character: 'B and e strings left ringing. Alex G open-string harmony.' },
 
+    { id: 'maj7-d', quality: 'maj7', label: 'D-root', frets: f('x x 10 9 8 7'),
+      rootString: 2, rootFret: 10, movable: true,
+      character: 'Root position on the top four strings. Sits well above the bass.' },
+
     { id: 'maj9-a', quality: 'maj9', label: 'A-root', frets: f('x 3 2 4 3 x'),
       rootString: 1, rootFret: 3, movable: true,
       character: 'The indie chord. Use this instead of maj7.' },
+
+    { id: 'maj9-e', quality: 'maj9', label: 'E-form', frets: f('8 10 9 9 8 10'),
+      rootString: 0, rootFret: 8, movable: true,
+      character: 'Six strings of it. Big and strummable where the A-root shape is a stab.' },
 
     { id: 'maj7s11-a', quality: 'maj7#11', label: 'A-root', frets: f('x 3 4 4 3 x'),
       rootString: 1, rootFret: 3, movable: true,
       character: 'Lydian. Dreamy, cinematic, slightly unreal.' },
 
+    { id: 'maj7s11-e', quality: 'maj7#11', label: 'E-root', frets: f('8 x 9 9 7 x'),
+      rootString: 0, rootFret: 8, movable: true,
+      character: 'Root, 7, 3 and the ♯11 — no 5th getting in the way of the colour.' },
+
     { id: '69-a', quality: '6/9', label: 'A-root', frets: f('x 3 2 2 3 3'),
       rootString: 1, rootFret: 3, movable: true,
       character: 'No 7th = no tension. Endlessly loopable.' },
+
+    { id: '69-e', quality: '6/9', label: 'E-form', frets: f('8 10 10 9 10 10'),
+      rootString: 0, rootFret: 8, movable: true,
+      character: 'The full six-string 6/9. Ring it out and leave it there.' },
 
     { id: '6-drone', quality: '6', label: 'Open drone', frets: f('3 x 4 4 0 0'),
       rootString: 0, rootFret: 3, movable: false,
@@ -47,6 +63,10 @@
     { id: 'add9-a', quality: 'add9', label: 'A-root', frets: f('x 3 2 0 3 0'),
       rootString: 1, rootFret: 3, movable: true,
       character: 'Jangly, open, Alex G territory.' },
+
+    { id: 'add9-e', quality: 'add9', label: 'E-form', frets: f('8 10 10 9 8 10'),
+      rootString: 0, rootFret: 8, movable: true,
+      character: 'A barre chord with the 9th swapped in on top. Works at any root.' },
 
     { id: 'sus2-a', quality: 'sus2', label: 'A-root', frets: f('x 3 0 0 3 3'),
       rootString: 1, rootFret: 3, movable: true,
@@ -80,13 +100,25 @@
       rootString: 1, rootFret: 0, movable: false,
       character: 'No 3rd in the shape — open and airy, the bass fills it in.' },
 
+    { id: 'm9-e', quality: 'm9', label: 'E-form', frets: f('8 10 8 8 8 10'),
+      rootString: 0, rootFret: 8, movable: true,
+      character: 'The whole neo-soul minor across six strings. Barre it and let it sit.' },
+
     { id: 'm11-a', quality: 'm11', label: 'A-root', frets: f('x 3 3 3 4 3'),
       rootString: 1, rootFret: 3, movable: true,
       character: 'Lush, hazy, quartal-ish.' },
 
+    { id: 'm11-e', quality: 'm11', label: 'E-form', frets: f('8 8 8 8 x x'),
+      rootString: 0, rootFret: 8, movable: true,
+      character: 'One finger, four strings, stacked 4ths. The quartal sound with a root under it.' },
+
     { id: 'm6-e', quality: 'm6', label: 'E-root', frets: f('8 x 7 8 8 x'),
       rootString: 0, rootFret: 8, movable: true,
       character: 'That bittersweet borrowed-iv sound.' },
+
+    { id: 'm6-a', quality: 'm6', label: 'A-form', frets: f('x 3 5 5 4 5'),
+      rootString: 1, rootFret: 3, movable: true,
+      character: 'The 6th up on top where you can hear it. Brighter read of the borrowed iv.' },
 
     { id: 'm7-a', quality: 'm7', label: 'A-root', frets: f('x 3 5 3 4 3'),
       rootString: 1, rootFret: 3, movable: true },
@@ -120,6 +152,10 @@
       rootString: 1, rootFret: 3, movable: true,
       character: 'The smooth dominant. Lacy’s bread and butter.' },
 
+    { id: '13-e', quality: '13', label: 'E-root', frets: f('8 x 8 9 10 x'),
+      rootString: 0, rootFret: 8, movable: true,
+      character: 'Root, ♭7, 3, 13 — the four notes that matter and nothing else.' },
+
     { id: '7s9-a', quality: '7#9', label: 'A-root', frets: f('x 3 2 3 4 x'),
       rootString: 1, rootFret: 3, movable: true,
       character: 'The Hendrix chord. Use as a bed, not a stab.' },
@@ -132,7 +168,11 @@
     /* ------------------------------------------------------------- other */
     { id: 'quartal-3', quality: 'quartal', label: '3-note', frets: f('x x 5 5 6 x'),
       rootString: 3, rootFret: 5, movable: true, rootless: true,
-      character: 'Stacked 4ths — modern, rootless, Weir-ish. Pick the root yourself; the bass decides.' }
+      character: 'Stacked 4ths — modern, rootless, Weir-ish. Pick the root yourself; the bass decides.' },
+
+    { id: 'quartal-4', quality: 'quartal', label: '4-note', frets: f('x x 5 5 6 6'),
+      rootString: 3, rootFret: 5, movable: true, rootless: true,
+      character: 'Four stacked 4ths. Even less committed to a key than the three-note shape.' }
   ];
 
   var BY_ID = {};

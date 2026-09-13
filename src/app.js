@@ -40,6 +40,7 @@
     octave: 0,
     labelMode: store.get('labelMode', 'interval'),
     flipped: store.get('flipped', '0') === '1',
+    ghosts: store.get('ghosts', '0') === '1',
     theme: store.get('theme', 'auto'),
     tab: 'chords',
     progId: null,
@@ -60,6 +61,17 @@
     var p = progression();
     if (p && state.step >= 0 && p.chords[state.step]) return p.chords[state.step];
     return null;
+  }
+
+  /* The chord before this one in the loop. Index 0 follows the last chord,
+   * because these progressions loop -- that turn is real voice leading too. */
+  function previous() {
+    var p = progression();
+    if (!p || state.step < 0 || p.chords.length < 2) return null;
+    var n = p.chords.length;
+    var ch = p.chords[(state.step - 1 + n) % n];
+    var res = CS.resolveChord(ch.root, ch.quality, ch.shapeId);
+    return res ? { voicing: res.voicing, chord: ch } : null;
   }
 
   /* The voicing currently on the board, plus everything the panels need. */
@@ -304,6 +316,8 @@
       voicing: v,
       labelMode: state.labelMode,
       flipped: state.flipped,
+      ghosts: state.ghosts,
+      heldPcs: cur.lead ? cur.lead.heldPcs : null,
       ariaLabel: 'Fretboard: ' + $('chord-symbol').textContent + ', low to high ' + label
     });
   }
@@ -480,7 +494,51 @@
     });
   }
 
-  function renderProgInfo() {
+
+  /* Reference section 8: move the fewest notes possible, hold common tones,
+   * move the rest by step. This shows how well the change you are looking at
+   * actually obeys that. */
+  function leadCard(lead, fromChord) {
+    var sp = function (n) {
+      return '<span class="sp role-' + n.role + '"><b>' + esc(P(n.name)) +
+             '</b><i>' + esc(P(n.label)) + '</i></span>';
+    };
+    var html = '<div class="lead-card"><span class="eyebrow">Voice leading ' +
+      '<span class="lead-from">from ' + esc(fromChord.symbol) + '</span></span>';
+
+    var bits = [];
+    bits.push(lead.commonTones + (lead.commonTones === 1 ? ' common tone' : ' common tones') +
+      (lead.commonTones ? ' (tied on the board)' : ''));
+    if (lead.moved.length) {
+      bits.push(lead.stepwise + ' of ' + lead.moved.length + ' move by step');
+    } else {
+      bits.push('nothing else moves');
+    }
+    html += '<p class="lead-stats">' + esc(bits.join(' \u00b7 ')) + '</p>';
+
+    if (lead.held.length) {
+      html += '<div class="lead-row"><span class="lead-tag">Held</span><span class="lead-notes">' +
+        lead.held.map(sp).join('') + '</span></div>';
+    }
+    if (lead.moved.length) {
+      html += '<div class="lead-row"><span class="lead-tag">Moves</span><span class="lead-moves">' +
+        lead.moved.map(function (m) {
+          if (!m.from) {
+            return '<span class="mv is-new">' + esc(P(m.to.name)) +
+                   ' <i>' + esc(P(m.to.label)) + '</i></span>';
+          }
+          var d = m.semitones;
+          var dir = d < 0 ? '\u2193' : '\u2191';
+          var cls = Math.abs(d) <= 2 ? 'mv is-step' : 'mv is-leap';
+          return '<span class="' + cls + '">' + esc(P(m.from.name)) + '\u2009\u2192\u2009' +
+                 esc(P(m.to.name)) + ' <i>' + esc(P(m.to.label)) + '</i>' +
+                 '<em>' + dir + Math.abs(d) + '</em></span>';
+        }).join('') + '</span></div>';
+    }
+    return html + '</div>';
+  }
+
+  function renderProgInfo(cur) {
     var host = $('prog-info');
     var p = progression();
     if (!p) { host.innerHTML = ''; return; }
@@ -490,6 +548,9 @@
 
     if (p.key !== p.originalKey) {
       html += '<p class="transposed">Transposed from ' + esc(P(p.originalKey)) + '.</p>';
+    }
+    if (cur && cur.lead && cur.prev) {
+      html += leadCard(cur.lead, cur.prev.chord);
     }
     if (p.bassLine) html += infoRow('Bass', esc(p.bassLine));
     if (p.pianoHint) html += infoRow('Piano / Rhodes', esc(p.pianoHint));
@@ -523,6 +584,9 @@
 
   function render() {
     var cur = current();
+    var prev = previous();
+    cur.prev = prev;
+    cur.lead = (prev && cur.voicing) ? CS.voiceLeading(prev.voicing, cur.voicing) : null;
     renderRoots();
     renderQualities();
     renderProgList();
@@ -531,8 +595,10 @@
     renderVoicings(cur);
     renderProgBar();
     renderChordInfo(cur);
-    renderProgInfo();
+    renderProgInfo(cur);
+    writeHash();
     $('flip-btn').setAttribute('aria-pressed', state.flipped ? 'true' : 'false');
+    $('ghost-btn').setAttribute('aria-pressed', state.ghosts ? 'true' : 'false');
     Array.prototype.forEach.call($('label-mode').querySelectorAll('button'), function (b) {
       var on = b.getAttribute('data-mode') === state.labelMode;
       b.setAttribute('aria-checked', on ? 'true' : 'false');
@@ -558,6 +624,12 @@
     $('flip-btn').addEventListener('click', function () {
       state.flipped = !state.flipped;
       store.set('flipped', state.flipped ? '1' : '0');
+      render();
+    });
+
+    $('ghost-btn').addEventListener('click', function () {
+      state.ghosts = !state.ghosts;
+      store.set('ghosts', state.ghosts ? '1' : '0');
       render();
     });
 
@@ -602,13 +674,48 @@
     });
   }
 
+
+  /* Shareable/bookmarkable location. Quality ids contain '#' and '/', so each
+   * segment is encoded individually rather than dropped into the hash raw. */
+  function writeHash() {
+    var parts = (state.progId && state.step >= 0)
+      ? ['p', state.progId, state.progKey, String(state.step)]
+      : ['c', state.root, state.quality, state.shapeId, String(state.octave)];
+    try {
+      history.replaceState(null, '', '#' + parts.map(encodeURIComponent).join('/'));
+    } catch (e) { /* file:// and sandboxed frames can refuse; not worth failing over */ }
+  }
+
+  function readHash() {
+    var raw = (location.hash || '').replace(/^#/, '');
+    if (!raw) return false;
+    var parts;
+    try { parts = raw.split('/').map(decodeURIComponent); } catch (e) { return false; }
+    if (parts[0] === 'p' && CS.progressionById(parts[1])) {
+      var prog = CS.progressionById(parts[1]);
+      state.progId = parts[1];
+      state.progKey = CS.ROOTS.indexOf(parts[2]) >= 0 ? parts[2] : prog.key;
+      var step = parseInt(parts[3], 10);
+      setStep(isNaN(step) ? 0 : step);
+      return true;
+    }
+    if (parts[0] === 'c' && CS.QUALITIES[parts[2]] && CS.pcOf(parts[1]) >= 0) {
+      setChord(parts[1], parts[2], parts[3] || null);
+      var oct = parseInt(parts[4], 10);
+      if (oct) { state.octave = oct; render(); }
+      return true;
+    }
+    return false;
+  }
+
   function init() {
     applyTheme();
     renderLegend();
     renderPalette();
     switchTab('chords');
     wire();
-    setChord('C', 'maj9', 'maj9-a');
+    if (!readHash()) setChord('C', 'maj9', 'maj9-a');
+    window.addEventListener('hashchange', function () { readHash(); });
   }
 
   if (document.readyState === 'loading') {
