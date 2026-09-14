@@ -14,7 +14,8 @@
     { id: 'neosoul', name: 'Neo-soul / Steve Lacy' },
     { id: 'frank',   name: 'Frank Ocean' },
     { id: 'jam',     name: 'Jam / Grateful Dead' },
-    { id: 'alexg',   name: 'Alex G' }
+    { id: 'alexg',   name: 'Alex G' },
+    { id: 'yours',   name: 'Your tracks' }
   ];
 
   function c(roman, root, quality, shapeId, bars, bass) {
@@ -269,6 +270,23 @@
       ]}],
       note: 'Play all of these keeping the B and e strings open.',
       why: 'The open strings create 9ths and 6ths that don’t belong to the shapes. That accidental complexity is the sound.'
+    },
+
+    /* ===================================================== F. Your tracks
+     * Not from the reference — this one came off a piano clip in Ableton.
+     */
+    {
+      id: 'y1', family: 'yours', code: 'Y1', name: 'Piano clip — I / I6-9 / ii / IV',
+      key: 'C', mode: 'major',
+      sections: [{ chords: [
+        c('Imaj9',    'C', 'maj9',  'maj9-open', 1),
+        c('I6/9',     'C', '6/9',   '69-open',   1),
+        c('ii(add9)', 'D', 'madd9', 'madd9-a',   1),
+        c('IV6/9',    'F', '6/9',   '69-f',      1)
+      ]}],
+      bassLine: 'C – C – D – F. Bar 2 keeps the root, so the move there is in the chord, not the bass.',
+      pianoHint: 'The piano already owns the guide tones. Guitar can drop the root and the 5th and play 3, 6, 9 up around G3–E5.',
+      why: 'No dominant anywhere, so it loops instead of resolving. The only real event is the maj7 falling to the 6th in bar 2 — one note, and on guitar one finger. Every change after it keeps three common tones.'
     }
   ];
 

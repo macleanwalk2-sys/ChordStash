@@ -40,6 +40,10 @@
       rootString: 0, rootFret: 8, movable: true,
       character: 'Six strings of it. Big and strummable where the A-root shape is a stab.' },
 
+    { id: 'maj9-open', quality: 'maj9', label: 'Open barre', frets: f('x 3 0 0 0 0'),
+      rootString: 1, rootFret: 3, movable: true,
+      character: 'One finger at C. R 9 5 7 3 across five strings with nothing doubled.' },
+
     { id: 'maj7s11-a', quality: 'maj7#11', label: 'A-root', frets: f('x 3 4 4 3 x'),
       rootString: 1, rootFret: 3, movable: true,
       character: 'Lydian. Dreamy, cinematic, slightly unreal.' },
@@ -55,6 +59,14 @@
     { id: '69-e', quality: '6/9', label: 'E-form', frets: f('8 10 10 9 10 10'),
       rootString: 0, rootFret: 8, movable: true,
       character: 'The full six-string 6/9. Ring it out and leave it there.' },
+
+    { id: '69-open', quality: '6/9', label: 'Open barre', frets: f('x 3 0 2 3 0'),
+      rootString: 1, rootFret: 3, movable: true,
+      character: 'One finger from the open maj9 shape — the 5th becomes the 6th.' },
+
+    { id: '69-f', quality: '6/9', label: 'F-form', frets: f('8 7 7 7 8 8'),
+      rootString: 0, rootFret: 8, movable: true,
+      character: 'Span of one. Open at F, a barre anywhere else, all six strings.' },
 
     { id: '6-drone', quality: '6', label: 'Open drone', frets: f('3 x 4 4 0 0'),
       rootString: 0, rootFret: 3, movable: false,
@@ -135,6 +147,10 @@
       rootString: 0, rootFret: 8, movable: true },
     { id: 'min-d', quality: 'm', label: 'D-form', frets: f('x x 10 12 13 11'),
       rootString: 2, rootFret: 10, movable: true },
+
+    { id: 'madd9-a', quality: 'madd9', label: 'A-root', frets: f('x 5 3 2 3 0'),
+      rootString: 1, rootFret: 5, movable: true,
+      character: 'Open at D, where it sits best; a five-fret stretch once you move it.' },
 
     { id: 'madd9-drone', quality: 'madd9', label: 'Open drone', frets: f('0 2 4 4 0 0'),
       rootString: 0, rootFret: 0, movable: false,
